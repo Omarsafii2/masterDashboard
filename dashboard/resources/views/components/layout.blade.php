@@ -104,8 +104,8 @@ body {
         </a>
       </li>
       <li class="nav-item">
-        <a href="#" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="right" title="Messages">
-          <i class="bi bi-envelope"></i> <span>Messages</span>
+        <a href="/admin/job" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="right" title="Messages">
+        <i class="bi bi-file-post"></i> <span>Jobs</span>
         </a>
       </li>
       <li class="nav-item">
@@ -117,7 +117,7 @@ body {
 
       @if (Auth::user()->role == 'super admin')
       <li class="nav-item">
-        <a href="#" class="nav-link " data-bs-toggle="tooltip" data-bs-placement="right" title="Settings">
+        <a href="/admin/manage" class="nav-link " data-bs-toggle="tooltip" data-bs-placement="right" title="Settings">
           <i class="bi bi-gear"></i> <span>manage admin</span>
         </a>
       </li>

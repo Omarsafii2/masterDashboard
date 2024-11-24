@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Company;
+use App\Models\Job;
+use App\Models\Admin;
 
 
 class AdminController extends Controller
@@ -42,6 +44,95 @@ class AdminController extends Controller
     public function logout(){
         Auth::guard('admin')->logout();
         return redirect()->route('admin.login');
+    }
+
+    public function manage(){
+        $admins=Admin::orderBy('id', 'desc')->get();
+        return view('admin.manage',['admins'=>$admins]);
+    }
+    public function AdminStore(Request $request){
+        $request->validate([
+            'name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'address' => 'required',
+            'img' => 'nullable|image|mimes:jpg,png,jpeg|max:10240',
+            'phone_number' => 'required',
+            'role' => 'required',
+            'password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/',
+            'cpassword' => 'required|same:password',
+        ]);
+
+        $filename = 'profile.png';
+        if ($request->hasFile('img')) {
+            $file = $request->file('img');
+    
+            // Save the file in the 'public/uploads/admin' directory
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/admin'), $filename); // Save to the public folder
+        }
+      
+    
+        $admin = new Admin();
+        $admin->name = $request->name;
+        $admin->last_name = $request->last_name;
+        $admin->email = $request->email;
+        $admin->password = bcrypt($request->password);
+        $admin->address = $request->address;
+        $admin->role = $request->role;
+        $admin->phone_number = $request->phone_number;
+        $admin->img = $filename ? 'uploads/admin/' . $filename : null; // Save the relative path
+        $admin->save();
+    
+        return redirect()->route('admin.manage')->with('success', 'Admin added successfully');
+    }
+    public function AdminProfile(int $id){
+        $admin=Admin::findOrFail($id);
+        return view('admin.adminprofile', ['admin'=>$admin]);
+    }
+    public function AdminUpdate(Request $request){
+        $request->validate([
+            'name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'address' => 'required',
+            'img' => 'nullable|image|mimes:jpg,png,jpeg|max:10240',
+            'phone_number' => 'required',
+        ]);
+
+        $admin=Admin::findOrFail($request->id);
+        if ($request->hasFile('img')) {
+            // Delete the old image if it exists and is not the default profile picture
+                if ($admin->img && $admin->img !== 'profile.png' && file_exists(public_path('uploads/admin/' . $admin->img))) {
+                    unlink(public_path('uploads/admin/' . $admin->img));
+                }
+    
+            // Upload the new image
+            $file = $request->file('img');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/admin'), $filename);
+    
+            // Assign the new image filename to the user
+            $admin->img ='uploads/admin/'.$filename;
+            } elseif (!$admin->img) {
+                // If no image uploaded and no existing image, assign default profile picture
+                $admin->img = 'uploads/admin/profile.png';
+            }
+
+            $admin->name=$request->name;
+            $admin->last_name=$request->last_name;
+            $admin->email=$request->email;
+            $admin->address=$request->address;
+            $admin->phone_number=$request->phone_number;
+            $admin->save();
+            return redirect()->route('admin.adminprofile', ['id'=>$admin->id])
+            ->with('success', 'Admin updated successfully.');
+
+    }
+    public function AdminDelete(int $id){
+        Admin::find($id)->delete();
+        return redirect()->route('admin.manage')
+        ->with('success', 'Admin deleted successfully.');
     }
 
 
@@ -114,6 +205,7 @@ class AdminController extends Controller
                 'phone_number' => 'nullable|string|max:20',
                 'gender' => 'nullable|in:male,female',
                 'bio' => 'nullable|string|max:1000',
+                'is_active' => 'required',
             ]);
 
 
@@ -154,6 +246,7 @@ class AdminController extends Controller
             $user->phone_number = $validatedData['phone_number'];
             $user->gender = $validatedData['gender'];
             $user->bio = $validatedData['bio'];
+            $user->is_active = $validatedData['is_active'];
         
         
             // Save updated data
@@ -167,6 +260,8 @@ class AdminController extends Controller
         public function UserDelete(int $id){
             
                 $user=User::where('id','=',$id)->first();
+                 $user->is_active='Inactive';
+                 $user->save();
                  $user->delete();
                  return redirect()->route('admin.user', $user->id)
                 ->with('success', 'User profile updated successfully.');
@@ -174,7 +269,8 @@ class AdminController extends Controller
             }
 
 
-            // ****************************8
+            // ******************************************************************************
+            //*********************************************************************************************** */
             public function CompanyIndex(){
                 $companies =Company::orderBy('id', 'desc')->get(); // Ascending order
                 return view('admin.company', ['companies'=>$companies]);
@@ -221,9 +317,131 @@ class AdminController extends Controller
                 $company=Company::where('id','=',$id)->first();
                 return view('admin.companyprofile',compact('company'));
             }
+            public function CompanyUpdate(Request $request)
+            {
+              $request->validate([
+                'name' => 'required|string|max:255',
+                'category'=>'required',
+                'email' => 'required|email|max:255|unique:users,email,' . $request->id,
+                'img' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'address' => 'required|string|max:255',
+                'business_license' => 'required|string|max:255',
+                'is_active' => 'required',
+              ]) ; 
+
+              $company=Company::where('id','=',$request->id)->first();
+
+              if ($request->hasFile('img')) {
+                // Delete the old image if it exists and is not the default profile picture
+                    if ($company->img && $company->img !== 'profile.png' && file_exists(public_path('uploads/company/' . $company->img))) {
+                        unlink(public_path('uploads/company/' . $company->img));
+                    }
+        
+                // Upload the new image
+                $file = $request->file('img');
+                $filename = time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/company'), $filename);
+        
+                // Assign the new image filename to the user
+                $company->img ='uploads/company/'.$filename;
+                } elseif (!$company->img) {
+                    // If no image uploaded and no existing image, assign default profile picture
+                    $company->img = 'uploads/company/profile.png';
+                }
+
+              $company->name = $request->name;
+              $company->category = $request->category;
+              $company->email = $request->email;
+              $company->address = $request->address;
+              $company->business_license = $request->business_license;
+              $company->is_active = $request->is_active;
+              $company->save();
+              return redirect()->route('admin.companyprofile' , ['id' => $company->id])
+              ->with('success', 'company updated successfully.');
+            }
+
+            public function CompanyDelete(int $id){
+                $company=Company::where('id','=',$id)->first();
+                 $company->is_active='Inactive';
+                 $company->save(); 
+                 $company->delete();
+                 
+                 return redirect()->route('admin.company', $company->id)
+                ->with('success', 'company updated successfully.');
+               
+            }
+
+            /******************************************************************88
+             * 8************************************************************/
 
 
-            
+                public function JobIndex(){
+                    $jobs =Job::with('company')->orderBy('id', 'desc')->get(); // Ascending order
+                    
+                    return view('admin.job', ['jobs'=>$jobs]);
+                    
+                }
+
+                public function JobStore(Request $request){
+                    $request->validate([
+                        'title'=>'required',
+                        'company_id'=>'required',
+                        'description'=>'required',
+                        'type'=>'required',
+                        'location'=>'required',
+                        'salary'=>'required',
+                        'duration'=>'required',
+                        'status'=>'required',
+                    ]);
+
+                    $job=new Job();
+                    $job->company_id=$request->company_id;
+                    $job->title=$request->title;
+                    $job->description=$request->description;
+                    $job->type=$request->type;
+                    $job->location=$request->location;
+                    $job->salary=$request->salary;
+                    $job->duration=$request->duration;
+                    $job->status=$request->status;
+                    $job->save();
+                    return redirect()->route('admin.job')
+                    ->with('success', 'job added successfully.');
+                }
+
+                public function JobView(int $id){
+                    $job=Job::with('company')->where('id','=',$id)->first();
+                    return view('admin.jobview',compact('job'));
+                }
+                public function JobUpdate(Request $request){
+                    $request->validate([
+                        'title'=>'required',
+                        'description'=>'required',
+                        'type'=>'required',
+                        'location'=>'required',
+                        'salary'=>'required',
+                        'duration'=>'required',
+                        'status'=>'required',
+                    ]);
+
+                    $job=Job::where('id','=',$request->id)->first();
+                    $job->title=$request->title;
+                    $job->description=$request->description;
+                    $job->type=$request->type;
+                    $job->location=$request->location;
+                    $job->salary=$request->salary;
+                    $job->duration=$request->duration;
+                    $job->status=$request->status;
+                    $job->save();
+                    return redirect()->route('admin.jobview',['id'=>$job->id] )
+                    ->with('success', 'job updated successfully.');
+                }
+
+                public function JobDelete(int $id){
+                    $job=Job::where('id','=',$id)->first();
+                    $job->delete();
+                    return redirect()->route('admin.job')
+                    ->with('success', 'job deleted successfully.');
+                }
             
            
         
@@ -233,7 +451,5 @@ class AdminController extends Controller
 
 
 
-    public function company(){
-        return view('admin.company');
-    }
+   
 }

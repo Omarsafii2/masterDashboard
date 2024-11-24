@@ -39,6 +39,12 @@ Route::controller(AdminController::class)->group(function () {
         Route::get('admin/index', 'index')->name('admin.index');
         Route::get('/admin/logout', 'logout')->name('admin.logout');
 
+        Route::get('/admin/manage','manage')->name('admin.manage');
+        Route::post('/admin/addadmin','AdminStore')->name('admin.addadmin');
+        Route::get('admin/{id}/adminprofile','AdminProfile')->name('admin.adminprofile');
+        Route::patch('/admin/editadmin','AdminUpdate')->name('admin.editadmin');
+        Route::delete('admin/admin/{id}', 'AdminDelete')->name('admin.admindelete');
+
 
         Route::get('/admin/user', 'UserIndex')->name('admin.user');
         Route::post('/admin/add','UserStore')->name('admin.add');
@@ -49,8 +55,15 @@ Route::controller(AdminController::class)->group(function () {
 
         Route::get('admin/company','CompanyIndex')->name('admin.company');
         Route::post('/admin/addcompany','CompanyStore')->name('admin.addcompany');
-        Route::get('admin/{id}/companyprofile','CompanyProfile')->name('admin.userprofile');
+        Route::get('admin/{id}/companyprofile','CompanyProfile')->name('admin.companyprofile');
+        Route::patch('/admin/editcompany','CompanyUpdate')->name('admin.editcompany');
+        Route::delete('/admin/company/{id}', 'CompanyDelete')->name('admin.companydelete');
 
+        Route::get('/admin/job','jobIndex')->name('admin.job');
+        Route::post('/admin/addjob','JobStore')->name('admin.addjob');
+        Route::get('admin/{id}/jobview','JobView')->name('admin.jobview');
+        Route::patch('/admin/editjob','JobUpdate')->name('admin.editjob');
+        Route::delete('/admin/job/{id}', 'JobDelete')->name('admin.jobdelete');
     });
         });
 

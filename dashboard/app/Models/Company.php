@@ -23,4 +23,8 @@ class Company extends Model
         'category',
         'subscription_status',
     ];
+
+    public function jobs(){
+        return $this->hasMany(Job::class);
+    }
 }

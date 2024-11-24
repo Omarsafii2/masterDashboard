@@ -23,8 +23,9 @@
 
 
                         <div class="modal-body">
-                            <form  action="/admin/addcompany" method="post" enctype="multipart/form-data">
+                            <form  action="/admin/editcompany" method="post" enctype="multipart/form-data">
                                 @csrf
+                                @method('patch')
                                 <input type="hidden" name="id" value="{{ $company->id }}">
                                 <div class="row">
                                     <div class="col-md-12 mb-4">
@@ -96,7 +97,7 @@
           
 
                                 <div class="row ">
-                                    <div class="col-md-8 mb-4 pb-2">
+                                    <div class="col-md-6 mb-4 pb-2">
                                         <div data-mdb-input-init class="form-outline">
                                             <div class="form-group">
                                                 <label for="img">upload images</label>
@@ -107,13 +108,16 @@
                                             @enderror
                                         </div>
                                     </div>
-                                        <div class="col-md-4 mt-4 pb-2 ">
+                                        <div class="col-md-6 mt-4 pb-2 ">
                                         <div data-mdb-input-init class="form-outline">
                                             <div class="form-group">
-                                            <p>jpg,png.jpeg</p>    
+                                                <label for="status">Active</label>
+                                               <input type="radio" name="is_active" value="active"  class="form-check-input" {{ $company->is_active === 'active' ? 'checked' : ''}}> 
+                                               <label for="status">Inactive</label>
+                                               <input type="radio" name="is_active" value="Inactive"  class="form-check-input" {{ $company->is_active === 'inactive' ? 'checked' : ''}}> 
                                             </div>    
                                         </div>
-                                </div>
+                                      </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -147,7 +151,7 @@
         </div>
     </nav>
     <hr>
-
+<!-- ************************************************************************** -->
     <div class="row">
       <div class="col-lg-4">
         <div class="card mb-4">

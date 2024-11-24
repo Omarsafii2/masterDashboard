@@ -14,7 +14,7 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header ">
-                            <h5 class="modal-title text-secondary" id="formModalLabel">Add New User</h5>
+                            <h5 class="modal-title text-secondary" id="formModalLabel">Add New Company</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
 
@@ -224,7 +224,7 @@
                                 </a>
 
                                 <!-- Delete Button -->
-                                <form action="/admin/{{$company->id}}/companyprofile" method="post" style="display: inline;">
+                                <form action="/admin/company/{{$company->id}}" method="post" style="display: inline;">
                                     @method('DELETE')
                                     @csrf
                                     <button type="submit" class="bg-transparent border-0 p-0">
